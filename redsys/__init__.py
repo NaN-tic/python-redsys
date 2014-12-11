@@ -24,7 +24,6 @@ DATA = [
     'Ds_Merchant_ConsumerLanguage',
     'Ds_Merchant_MerchantSignature',
     'Ds_Merchant_Terminal',
-    'Ds_Merchant_SumTotal',
     'Ds_Merchant_TransactionType',
 ]
 
@@ -102,7 +101,6 @@ class Client(object):
             'Ds_Merchant_ConsumerLanguage': LANG_MAP.get(self.Ds_Merchant_ConsumerLanguage, '001'),
             'Ds_Merchant_MerchantSignature': self.Ds_Merchant_MerchantSignature,
             'Ds_Merchant_Terminal': self.Ds_Merchant_Terminal or '1',
-            'Ds_Merchant_SumTotal': int(self.Ds_Merchant_SumTotal * 100),
             'Ds_Merchant_TransactionType': self.Ds_Merchant_TransactionType \
                 or '0',
             'Ds_Merchant_MerchantData': self.Ds_Merchant_MerchantData,
