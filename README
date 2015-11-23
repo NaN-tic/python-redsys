@@ -1,12 +1,12 @@
 Redsys client
 ~~~~~~~~~~~~~
 
-A python client for sending payment orders to the Redsys service.
+Credit payments to the Redsys service.
 
 Requirements
 ------------
 
-* Python 2.5, 2.6 or 2.7
+* Python 2.7
 
 Installation
 ------------
@@ -33,13 +33,13 @@ REDSYS_MERCHANT_URL = 'http://www.zikzakmedia.com'
 REDSYS_MERCHANT_NAME = "Zikzakmedia SL"
 REDSYS_MERCHANT_CODE = '000000000'
 REDSYS_SECRET_KEY = '123456'
-REDSYS_TERMINAL = 1
-REDSYS_CURRENCY = 978
-REDSYS_TRANS_TYPE = 0
+REDSYS_TERMINAL = u'1'
+REDSYS_CURRENCY = u'978'
+REDSYS_TRANS_TYPE = u'0'
 
 values = {
     'Ds_Merchant_Amount': 10.0,
-    'Ds_Merchant_Currency': 978,
+    'Ds_Merchant_Currency': u'978',
     'Ds_Merchant_Order': 'SO001',
     'Ds_Merchant_ProductDescription': 'ZZSaas services',
     'Ds_Merchant_Titular': REDSYS_MERCHANT_NAME,
@@ -51,7 +51,13 @@ values = {
     'Ds_Merchant_Terminal': REDSYS_TERMINAL,
     'Ds_Merchant_SumTotal': 10.0,
     'Ds_Merchant_TransactionType': REDSYS_TRANS_TYPE,
-}
+    }
 
-redsyspayment = Client(business_code=REDSYS_MERCHANT_CODE, priv_key=REDSYS_SECRET_KEY, sandbox=SANDBOX)
-redsys_form = redsyspayment.get_pay_form_data(values)
+redsyspayment = Client(business_code=REDSYS_MERCHANT_CODE, secret_key=REDSYS_SECRET_KEY, sandbox=SANDBOX)
+redsys_form = redsyspayment.redsys_generate_request(values)
+
+Thanks
+------
+
+Thanks `Álvaro Vélez <https://github.com/alvarovelezgalvez>`_ and `Jordi Colell <https://github.com/jordic>`_
+to develop new signature Redsys HMAC-256 (`Django-sermepa <https://github.com/alvarovelezgalvez/django-sermepa/>`_).
