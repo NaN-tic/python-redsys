@@ -10,12 +10,17 @@ Requirements
 
 Installation
 ------------
-    
+
 Through pip:
+
     pip install redsys
+
 or easy_install:
+
     easy_install redsys
+    
 or download the source, un-tar/un-zip it, cd into redsys, and:
+
     python setup.py install
 
 Quick Start
