@@ -46,19 +46,19 @@ Quick Start
     REDSYS_TRANS_TYPE = u'0'
 
     values = {
-        'Ds_Merchant_Amount': 10.0,
-        'Ds_Merchant_Currency': u'978',
-        'Ds_Merchant_Order': 'SO001',
-        'Ds_Merchant_ProductDescription': 'ZZSaas services',
-        'Ds_Merchant_Titular': REDSYS_MERCHANT_NAME,
-        'Ds_Merchant_MerchantCode': REDSYS_MERCHANT_CODE,
-        'Ds_Merchant_MerchantURL': REDSYS_MERCHANT_URL,
-        'Ds_Merchant_UrlOK': 'http://www.zzsaas.com/redsys/confirm',
-        'Ds_Merchant_UrlKO': 'http://www.zzsaas.com/redsys/cancel',
-        'Ds_Merchant_MerchantName': REDSYS_MERCHANT_NAME,
-        'Ds_Merchant_Terminal': REDSYS_TERMINAL,
-        'Ds_Merchant_SumTotal': 10.0,
-        'Ds_Merchant_TransactionType': REDSYS_TRANS_TYPE,
+        'DS_MERCHANT_AMOUNT': 10.0,
+        'DS_MERCHANT_CURRENCY': u'978',
+        'DS_MERCHANT_ORDER': 'SO001',
+        'DS_MERCHANT_PRODUCTDESCRIPTION': 'ZZSaas services',
+        'DS_MERCHANT_TITULAR': REDSYS_MERCHANT_NAME,
+        'DS_MERCHANT_MERCHANTCODE': REDSYS_MERCHANT_CODE,
+        'DS_MERCHANT_MERCHANTURL': REDSYS_MERCHANT_URL,
+        'DS_MERCHANT_URLOK': 'http://www.zzsaas.com/redsys/confirm',
+        'DS_MERCHANT_URLKO': 'http://www.zzsaas.com/redsys/cancel',
+        'DS_MERCHANT_MERCHANTNAME': REDSYS_MERCHANT_NAME,
+        'DS_MERCHANT_TERMINAL': REDSYS_TERMINAL,
+        'DS_MERCHANT_SUMTOTAL': 10.0,
+        'DS_MERCHANT_TRANSACTIONTYPE': REDSYS_TRANS_TYPE,
         }
 
     redsyspayment = Client(business_code=REDSYS_MERCHANT_CODE, secret_key=REDSYS_SECRET_KEY, sandbox=SANDBOX)
@@ -67,5 +67,6 @@ Quick Start
 Thanks
 ------
 
-Thanks `Álvaro Vélez <https://github.com/alvarovelezgalvez>`_ and `Jordi Colell <https://github.com/jordic>`_
-to develop new signature Redsys HMAC-256 (`Django-sermepa <https://github.com/alvarovelezgalvez/django-sermepa/>`_).
+* Thanks `Eduard Carreras <https://bitbucket.org/ecarreras/>`_ to start python-sermepa package.
+* Thanks `Álvaro Vélez <https://github.com/alvarovelezgalvez>`_ and `Jordi Colell <https://github.com/jordic>`_
+  to develop new signature Redsys HMAC-256 (`Django-sermepa <https://github.com/alvarovelezgalvez/django-sermepa/>`_).
