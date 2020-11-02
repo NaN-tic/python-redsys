@@ -72,7 +72,7 @@ class Client(object):
         :return Ds_MerchantParameters: Encoded json structure with all parameters
         """
         parameters = (json.dumps(merchant_parameters)).encode()
-        return ''.join(unicode(base64.encodestring(parameters), 'utf-8').splitlines())
+        return ''.join(str(base64.encodestring(parameters), 'utf-8').splitlines())
 
     def decode_parameters(self, Ds_MerchantParameters):
         """
@@ -119,7 +119,7 @@ class Client(object):
         """
         for param in transaction_params:
             if param not in DATA:
-                raise ValueError(u"The received parameter %s is not allowed."
+                raise ValueError("The received parameter %s is not allowed."
                                  % param)
             setattr(self, param, transaction_params[param])
         if not transaction_params.get('DS_MERCHANT_MERCHANTDATA'):

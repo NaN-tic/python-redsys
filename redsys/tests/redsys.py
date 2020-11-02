@@ -1,5 +1,5 @@
 import unittest
-from redsys import Client
+from .redsys import Client
 
 
 class TestRedsysClient(unittest.TestCase):
@@ -10,9 +10,9 @@ class TestRedsysClient(unittest.TestCase):
         REDSYS_MERCHANT_NAME = "Zikzakmedia SL"
         REDSYS_MERCHANT_CODE = '000000000'
         REDSYS_SECRET_KEY = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7'
-        REDSYS_TERMINAL = u'1'
-        REDSYS_CURRENCY = u'978'
-        REDSYS_TRANS_TYPE = u'0'
+        REDSYS_TERMINAL = '1'
+        REDSYS_CURRENCY = '978'
+        REDSYS_TRANS_TYPE = '0'
 
         values = {
             'DS_MERCHANT_AMOUNT': 10.0,
