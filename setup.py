@@ -3,7 +3,8 @@
 """Setup file for redsys client.
 """
 
-from distutils.core import setup
+import os
+from setuptools import setup, find_packages
 
 PACKAGES = ['redsys', ]
 PACKAGES_DATA = {'redsys.tests': []}
