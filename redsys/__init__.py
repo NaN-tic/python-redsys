@@ -79,7 +79,7 @@ class Client(object):
         Given the Ds_MerchantParameters from Redsys, decode it and eval the json file
 
         :param Ds_MerchantParameters: Encoded json structure returned from Redsys
-        :return merchant_parameters: Json structure with all parameters 
+        :return merchant_parameters: Json structure with all parameters
         """
 
         Ds_MerchantParameters_decoded = base64.standard_b64decode(Ds_MerchantParameters)
@@ -95,7 +95,7 @@ class Client(object):
         :return  order_encrypted: The encrypted order
         """
         pycrypto = DES3.new(base64.standard_b64decode(self.secret_key), DES3.MODE_CBC, IV=b'\0\0\0\0\0\0\0\0')
-        order_padded = Ds_Merchant_Order.ljust(16, b'\0')
+        order_padded = Ds_Merchant_Order.ljust(16, '\0')
         return pycrypto.encrypt(order_padded)
 
     def sign_hmac256(self, order_encrypted, Ds_MerchantParameters):
@@ -169,7 +169,7 @@ class Client(object):
 
         :param Ds_Signature: Received signature
         :param Ds_MerchantParameters: Received parameters
-        :return: True if signature is confirmed, False if not 
+        :return: True if signature is confirmed, False if not
         """
         merchant_parameters = self.decode_parameters(Ds_MerchantParameters)
         order = merchant_parameters['Ds_Order']
