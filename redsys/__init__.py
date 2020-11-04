@@ -13,7 +13,6 @@ import hashlib
 import json
 import base64
 import hmac
-import ast
 from Crypto.Cipher import DES3
 
 DATA = [
@@ -49,6 +48,7 @@ LANG_MAP = {
     'da': '208',
     }
 
+ALPHANUMERIC_CHARACTERS = re.compile('[^a-zA-Z0-9]')
 
 class Client(object):
     """Client"""
@@ -64,28 +64,20 @@ class Client(object):
         else:
             self.redsys_url = 'https://sis.redsys.es/sis/realizarPago'
 
-    def encode_parameters(self, merchant_parameters):
+    @staticmethod
+    def decode_parameters(merchant_parameters):
         """
-        Create a json object, codify it in base64 and delete their carrier returns
+        Given the Ds_MerchantParameters from Redsys, decode it and eval the
+        json file
 
-        :param merchant_parameters: Dict with all merchant parameters
-        :return Ds_MerchantParameters: Encoded json structure with all parameters
-        """
-        parameters = (json.dumps(merchant_parameters)).encode()
-        return ''.join(str(base64.encodestring(parameters), 'utf-8').splitlines())
-
-    def decode_parameters(self, Ds_MerchantParameters):
-        """
-        Given the Ds_MerchantParameters from Redsys, decode it and eval the json file
-
-        :param Ds_MerchantParameters: Encoded json structure returned from Redsys
+        :param merchant_parameters: Base 64 encoded json structure returned by
+               Redsys
         :return merchant_parameters: Json structure with all parameters
         """
+        assert isinstance(merchant_parameters, str)
+        return json.loads(base64.b64decode(merchant_parameters).decode())
 
-        Ds_MerchantParameters_decoded = base64.standard_b64decode(Ds_MerchantParameters)
-        return ast.literal_eval(Ds_MerchantParameters_decoded)
-
-    def encrypt_order_with_3DES(self, Ds_Merchant_Order):
+    def encrypt_order_with_3DES(self, order):
         """
         This method creates a unique key for every request, based on the
         Ds_Merchant_Order and in the shared secret (SERMEPA_SECRET_KEY).
@@ -94,97 +86,86 @@ class Client(object):
         :param Ds_Merchant_Order: Dict with all merchant parameters
         :return  order_encrypted: The encrypted order
         """
-        pycrypto = DES3.new(base64.standard_b64decode(self.secret_key),
+        assert isinstance(order, str)
+        cipher = DES3.new(base64.b64decode(self.secret_key),
             DES3.MODE_CBC, IV=b'\0\0\0\0\0\0\0\0')
-        merchant_order = Ds_Merchant_Order.encode('utf-8')
-        order_padded = merchant_order.ljust(16, b'\0')
-        return pycrypto.encrypt(order_padded)
+        return cipher.encrypt(order.encode().ljust(16, b'\0'))
 
-    def sign_hmac256(self, order_encrypted, Ds_MerchantParameters):
+    @staticmethod
+    def sign_hmac256(encrypted_order, merchant_parameters):
         """
-        Use the order_encrypted we have to sign the merchant data using
-        a HMAC SHA256 algorithm  and encode the result using Base64
+        Use the encrypted_order we have to sign the merchant data using
+        a HMAC SHA256 algorithm and encode the result using Base64.
 
-        :param order_encrypted: Encrypted Ds_Merchant_Order
-        :param Ds_MerchantParameters: Redsys aleready encoded parameters
-        :return Ds_Signature: Generated signature encoded in base64
+        :param encrypted_order: Encrypted Ds_Merchant_Order
+        :param merchant_parameters: Redsys already encoded parameters
+        :return Generated signature as a base64 encoded string
         """
-        hmac_value = hmac.new(order_encrypted,
-            Ds_MerchantParameters.encode('utf-8'), hashlib.sha256).digest()
-        return base64.b64encode(hmac_value)
+        assert isinstance(encrypted_order, bytes)
+        assert isinstance(merchant_parameters, bytes)
+        digest = hmac.new(encrypted_order, merchant_parameters,
+            hashlib.sha256).digest()
+        return base64.b64encode(digest).decode()
 
-    def redsys_generate_request(self, transaction_params):
+    def redsys_generate_request(self, params):
         """
         Method to generate Redsys Ds_MerchantParameters and Ds_Signature
 
-        :param transaction_params: Dict with all transaction parameters
+        :param params: Dict with all transaction parameters
         :return dict url, signature, parameters and type signature
         """
-        for param in transaction_params:
-            if param not in DATA:
-                raise ValueError("The received parameter %s is not allowed."
-                                 % param)
-            setattr(self, param, transaction_params[param])
-        if not transaction_params.get('DS_MERCHANT_MERCHANTDATA'):
-            self.DS_MERCHANT_MERCHANTDATA = None
-        if not transaction_params.get('DS_MERCHANT_DATEFRECUENCY'):
-            self.DS_MERCHANT_DATEFRECUENCY = None
-        if not transaction_params.get('DS_MERCHANT_CHARGEEXPIRYDATE'):
-            self.DS_MERCHANT_CHARGEEXPIRYDATE = None
-        if not transaction_params.get('DS_MERCHANT_AUTHORISATIONCODE'):
-            self.DS_MERCHANT_AUTHORISATIONCODE = None
-        if not transaction_params.get('DS_MERCHANT_TRANSACTIONDATE'):
-            self.DS_MERCHANT_TRANSACTIONDATE = None
-
         merchant_parameters = {
-            'DS_MERCHANT_AMOUNT': int(self.DS_MERCHANT_AMOUNT * 100),
-            'DS_MERCHANT_ORDER': self.DS_MERCHANT_ORDER.zfill(10),
-            'DS_MERCHANT_MERCHANTCODE': self.DS_MERCHANT_MERCHANTCODE[:9],
-            'DS_MERCHANT_CURRENCY': self.DS_MERCHANT_CURRENCY or 978, # EUR
-            'DS_MERCHANT_TRANSACTIONTYPE': self.DS_MERCHANT_TRANSACTIONTYPE \
-                    or '0',
-            'DS_MERCHANT_TERMINAL': self.DS_MERCHANT_TERMINAL or '1',
-            'DS_MERCHANT_URLOK': self.DS_MERCHANT_URLOK[:250],
-            'DS_MERCHANT_URLKO': self.DS_MERCHANT_URLKO[:250],
-            'DS_MERCHANT_MERCHANTURL': self.DS_MERCHANT_MERCHANTURL[:250],
-            'DS_MERCHANT_PRODUCTDESCRIPTION':
-                    self.DS_MERCHANT_PRODUCTDESCRIPTION[:125],
-            'DS_MERCHANT_TITULAR': self.DS_MERCHANT_TITULAR[:60],
-            'DS_MERCHANT_MERCHANTNAME': self.DS_MERCHANT_MERCHANTNAME[:25],
+            'DS_MERCHANT_AMOUNT': int(params['DS_MERCHANT_AMOUNT'] * 100),
+            'DS_MERCHANT_ORDER': params['DS_MERCHANT_ORDER'].zfill(10),
+            'DS_MERCHANT_MERCHANTCODE': params['DS_MERCHANT_MERCHANTCODE'][:9],
+            'DS_MERCHANT_CURRENCY': params['DS_MERCHANT_CURRENCY'] or 978, # EUR
+            'DS_MERCHANT_TRANSACTIONTYPE': (
+                params['DS_MERCHANT_TRANSACTIONTYPE'] or '0'),
+            'DS_MERCHANT_TERMINAL': params['DS_MERCHANT_TERMINAL'] or '1',
+            'DS_MERCHANT_URLOK': params['DS_MERCHANT_URLOK'][:250],
+            'DS_MERCHANT_URLKO': params['DS_MERCHANT_URLKO'][:250],
+            'DS_MERCHANT_MERCHANTURL': params['DS_MERCHANT_MERCHANTURL'][:250],
+            'DS_MERCHANT_PRODUCTDESCRIPTION': (
+                    params['DS_MERCHANT_PRODUCTDESCRIPTION'][:125]),
+            'DS_MERCHANT_TITULAR': params['DS_MERCHANT_TITULAR'][:60],
+            'DS_MERCHANT_MERCHANTNAME': params['DS_MERCHANT_MERCHANTNAME'][:25],
             'DS_MERCHANT_CONSUMERLANGUAGE': LANG_MAP.get(
-                self.DS_MERCHANT_CONSUMERLANGUAGE, '001'),
+                params.get('DS_MERCHANT_CONSUMERLANGUAGE'), '001'),
             }
 
-        Ds_MerchantParameters = self.encode_parameters(merchant_parameters)
-        order_encrypted = self.encrypt_order_with_3DES(
+        # Encode merchant_parameters in json + base64
+        b64_params = base64.b64encode(json.dumps(merchant_parameters).encode())
+        # Encrypt order
+        encrypted_order = self.encrypt_order_with_3DES(
             merchant_parameters['DS_MERCHANT_ORDER'])
-        Ds_Signature = self.sign_hmac256(order_encrypted, Ds_MerchantParameters)
-
+        # Sign parameters
+        signature = self.sign_hmac256(encrypted_order, b64_params)
         return {
             'Ds_Redsys_Url': self.redsys_url,
             'Ds_SignatureVersion': 'HMAC_SHA256_V1',
-            'Ds_MerchantParameters': Ds_MerchantParameters,
-            'Ds_Signature': Ds_Signature,
+            'Ds_MerchantParameters': b64_params.decode(),
+            'Ds_Signature': signature,
             }
 
-    def redsys_check_response(self, Ds_Signature, Ds_MerchantParameters):
+    def redsys_check_response(self, signature, b64_merchant_parameters):
         """
         Method to check received Ds_Signature with the one we extract from
         Ds_MerchantParameters data.
         We remove non alphanumeric characters before doing the comparison
 
-        :param Ds_Signature: Received signature
-        :param Ds_MerchantParameters: Received parameters
+        :param signature: Received signature
+        :param b64_merchant_parameters: Received parameters
         :return: True if signature is confirmed, False if not
         """
-        merchant_parameters = self.decode_parameters(Ds_MerchantParameters)
-        order = merchant_parameters['Ds_Order']
-        order_encrypted = self.encrypt_order_with_3DES(order)
-        Ds_Signature_calculated = self.sign_hmac256(order_encrypted,
-            Ds_MerchantParameters)
+        merchant_parameters = json.loads(base64.b64decode(
+                b64_merchant_parameters).decode())
 
-        alphanumeric_characters = re.compile('[^a-zA-Z0-9]')
-        Ds_Signature_safe = re.sub(alphanumeric_characters, '', Ds_Signature)
-        Ds_Signature_calculated_safe = re.sub(alphanumeric_characters, '',
-            Ds_Signature_calculated)
-        return Ds_Signature_safe == Ds_Signature_calculated_safe
+        order = merchant_parameters['Ds_Order']
+        encrypted_order = self.encrypt_order_with_3DES(order)
+        computed_signature = self.sign_hmac256(encrypted_order,
+            merchant_parameters)
+
+        safe_signature = re.sub(ALPHANUMERIC_CHARACTERS, '', signature)
+        safe_computed_signature = re.sub(ALPHANUMERIC_CHARACTERS, '',
+            computed_signature)
+        return safe_signature == safe_computed_signature
