@@ -95,7 +95,8 @@ class Client(object):
         :return  order_encrypted: The encrypted order
         """
         pycrypto = DES3.new(base64.standard_b64decode(self.secret_key), DES3.MODE_CBC, IV=b'\0\0\0\0\0\0\0\0')
-        order_padded = Ds_Merchant_Order.ljust(16, '\0')
+        merchant_order = Ds_Merchant_Order.encode('utf-8')
+        order_padded = merchant_order.ljust(16, b'\0')
         return pycrypto.encrypt(order_padded)
 
     def sign_hmac256(self, order_encrypted, Ds_MerchantParameters):
@@ -107,7 +108,7 @@ class Client(object):
         :param Ds_MerchantParameters: Redsys aleready encoded parameters
         :return Ds_Signature: Generated signature encoded in base64
         """
-        hmac_value = hmac.new(order_encrypted, Ds_MerchantParameters, hashlib.sha256).digest()
+        hmac_value = hmac.new(order_encrypted, Ds_MerchantParameters.encode('utf-8'), hashlib.sha256).digest()
         return base64.b64encode(hmac_value)
 
     def redsys_generate_request(self, transaction_params):
@@ -179,7 +180,4 @@ class Client(object):
         alphanumeric_characters = re.compile('[^a-zA-Z0-9]')
         Ds_Signature_safe = re.sub(alphanumeric_characters, '', Ds_Signature)
         Ds_Signature_calculated_safe = re.sub(alphanumeric_characters, '', Ds_Signature_calculated)
-        if Ds_Signature_safe  == Ds_Signature_calculated_safe:
-            return True
-        else:
-            return False
+        return Ds_Signature_safe == Ds_Signature_calculated_safe

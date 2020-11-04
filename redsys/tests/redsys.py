@@ -11,12 +11,12 @@ class TestRedsysClient(unittest.TestCase):
         REDSYS_MERCHANT_CODE = '000000000'
         REDSYS_SECRET_KEY = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7'
         REDSYS_TERMINAL = '1'
-        REDSYS_CURRENCY = '978'
+        REDSYS_CURRENCY = 978
         REDSYS_TRANS_TYPE = '0'
 
         values = {
             'DS_MERCHANT_AMOUNT': 10.0,
-            'DS_MERCHANT_CURRENCY': 978,
+            'DS_MERCHANT_CURRENCY': REDSYS_CURRENCY,
             'DS_MERCHANT_ORDER': 'SO001',
             'DS_MERCHANT_PRODUCTDESCRIPTION': 'ZZSaas services',
             'DS_MERCHANT_TITULAR': REDSYS_MERCHANT_NAME,
