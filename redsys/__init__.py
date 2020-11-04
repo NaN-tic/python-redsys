@@ -87,14 +87,15 @@ class Client(object):
 
     def encrypt_order_with_3DES(self, Ds_Merchant_Order):
         """
-        This method creates a unique key for every request, based on the Ds_Merchant_Order
-        and in the shared secret (SERMEPA_SECRET_KEY).
+        This method creates a unique key for every request, based on the
+        Ds_Merchant_Order and in the shared secret (SERMEPA_SECRET_KEY).
         This unique key is Triple DES ciphered.
 
         :param Ds_Merchant_Order: Dict with all merchant parameters
         :return  order_encrypted: The encrypted order
         """
-        pycrypto = DES3.new(base64.standard_b64decode(self.secret_key), DES3.MODE_CBC, IV=b'\0\0\0\0\0\0\0\0')
+        pycrypto = DES3.new(base64.standard_b64decode(self.secret_key),
+            DES3.MODE_CBC, IV=b'\0\0\0\0\0\0\0\0')
         merchant_order = Ds_Merchant_Order.encode('utf-8')
         order_padded = merchant_order.ljust(16, b'\0')
         return pycrypto.encrypt(order_padded)
@@ -108,7 +109,8 @@ class Client(object):
         :param Ds_MerchantParameters: Redsys aleready encoded parameters
         :return Ds_Signature: Generated signature encoded in base64
         """
-        hmac_value = hmac.new(order_encrypted, Ds_MerchantParameters.encode('utf-8'), hashlib.sha256).digest()
+        hmac_value = hmac.new(order_encrypted,
+            Ds_MerchantParameters.encode('utf-8'), hashlib.sha256).digest()
         return base64.b64encode(hmac_value)
 
     def redsys_generate_request(self, transaction_params):
@@ -149,11 +151,13 @@ class Client(object):
                     self.DS_MERCHANT_PRODUCTDESCRIPTION[:125],
             'DS_MERCHANT_TITULAR': self.DS_MERCHANT_TITULAR[:60],
             'DS_MERCHANT_MERCHANTNAME': self.DS_MERCHANT_MERCHANTNAME[:25],
-            'DS_MERCHANT_CONSUMERLANGUAGE': LANG_MAP.get(self.DS_MERCHANT_CONSUMERLANGUAGE, '001'),
+            'DS_MERCHANT_CONSUMERLANGUAGE': LANG_MAP.get(
+                self.DS_MERCHANT_CONSUMERLANGUAGE, '001'),
             }
 
         Ds_MerchantParameters = self.encode_parameters(merchant_parameters)
-        order_encrypted = self.encrypt_order_with_3DES(merchant_parameters['DS_MERCHANT_ORDER'])
+        order_encrypted = self.encrypt_order_with_3DES(
+            merchant_parameters['DS_MERCHANT_ORDER'])
         Ds_Signature = self.sign_hmac256(order_encrypted, Ds_MerchantParameters)
 
         return {
@@ -165,7 +169,8 @@ class Client(object):
 
     def redsys_check_response(self, Ds_Signature, Ds_MerchantParameters):
         """
-        Method to check received Ds_Signature with the one we extract from Ds_MerchantParameters data.
+        Method to check received Ds_Signature with the one we extract from
+        Ds_MerchantParameters data.
         We remove non alphanumeric characters before doing the comparison
 
         :param Ds_Signature: Received signature
@@ -175,9 +180,11 @@ class Client(object):
         merchant_parameters = self.decode_parameters(Ds_MerchantParameters)
         order = merchant_parameters['Ds_Order']
         order_encrypted = self.encrypt_order_with_3DES(order)
-        Ds_Signature_calculated = self.sign_hmac256(order_encrypted, Ds_MerchantParameters)
+        Ds_Signature_calculated = self.sign_hmac256(order_encrypted,
+            Ds_MerchantParameters)
 
         alphanumeric_characters = re.compile('[^a-zA-Z0-9]')
         Ds_Signature_safe = re.sub(alphanumeric_characters, '', Ds_Signature)
-        Ds_Signature_calculated_safe = re.sub(alphanumeric_characters, '', Ds_Signature_calculated)
+        Ds_Signature_calculated_safe = re.sub(alphanumeric_characters, '',
+            Ds_Signature_calculated)
         return Ds_Signature_safe == Ds_Signature_calculated_safe
