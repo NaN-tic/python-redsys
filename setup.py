@@ -19,7 +19,7 @@ setup(name='redsys',
     license='General Public Licence 2',
     provides=['redsys'],
     install_requires=[
-        'pycryptodome',
+        'pycrypto',
         ],
     packages=PACKAGES,
     package_data=PACKAGES_DATA,
