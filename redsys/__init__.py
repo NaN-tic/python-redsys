@@ -163,7 +163,7 @@ class Client(object):
         order = merchant_parameters['Ds_Order']
         encrypted_order = self.encrypt_order_with_3DES(order)
         computed_signature = self.sign_hmac256(encrypted_order,
-            merchant_parameters)
+            b64_merchant_parameters)
 
         safe_signature = re.sub(ALPHANUMERIC_CHARACTERS, b'', signature)
         safe_computed_signature = re.sub(ALPHANUMERIC_CHARACTERS, b'',
