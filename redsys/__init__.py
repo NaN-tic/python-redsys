@@ -48,7 +48,7 @@ LANG_MAP = {
     'da': '208',
     }
 
-ALPHANUMERIC_CHARACTERS = re.compile('[^a-zA-Z0-9]')
+ALPHANUMERIC_CHARACTERS = re.compile(b'[^a-zA-Z0-9]')
 
 class Client(object):
     """Client"""
@@ -105,7 +105,7 @@ class Client(object):
         assert isinstance(merchant_parameters, bytes)
         digest = hmac.new(encrypted_order, merchant_parameters,
             hashlib.sha256).digest()
-        return base64.b64encode(digest).decode()
+        return base64.b64encode(digest)
 
     def redsys_generate_request(self, params):
         """
@@ -139,7 +139,7 @@ class Client(object):
         encrypted_order = self.encrypt_order_with_3DES(
             merchant_parameters['DS_MERCHANT_ORDER'])
         # Sign parameters
-        signature = self.sign_hmac256(encrypted_order, b64_params)
+        signature = self.sign_hmac256(encrypted_order, b64_params).decode()
         return {
             'Ds_Redsys_Url': self.redsys_url,
             'Ds_SignatureVersion': 'HMAC_SHA256_V1',
@@ -165,7 +165,7 @@ class Client(object):
         computed_signature = self.sign_hmac256(encrypted_order,
             merchant_parameters)
 
-        safe_signature = re.sub(ALPHANUMERIC_CHARACTERS, '', signature)
-        safe_computed_signature = re.sub(ALPHANUMERIC_CHARACTERS, '',
+        safe_signature = re.sub(ALPHANUMERIC_CHARACTERS, b'', signature)
+        safe_computed_signature = re.sub(ALPHANUMERIC_CHARACTERS, b'',
             computed_signature)
         return safe_signature == safe_computed_signature
