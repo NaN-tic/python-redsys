@@ -1,5 +1,5 @@
 import unittest
-from .redsys import Client
+from redsys import Client
 
 
 class TestRedsysClient(unittest.TestCase):
