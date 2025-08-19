@@ -32,7 +32,7 @@ class TestRedsysClient(unittest.TestCase):
         redsyspayment = Client(business_code=REDSYS_MERCHANT_CODE, secret_key=REDSYS_SECRET_KEY, sandbox=SANDBOX)
         redsys_data = redsyspayment.redsys_generate_request(values)
 
-        signature = 'XiMqO66ytDZ8PeoGoiGjm57igv0I4Dr1PD7wXyJLSKE='
+        signature = 'jYGvi/jEWufC4r11i9GDDnRJmw7mQHPbOA/IJ8fD3Fs='
         self.assertEqual(redsys_data['Ds_Signature'], signature)
 
 if __name__ == '__main__':
