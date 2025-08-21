@@ -6,7 +6,7 @@ Credit payments to the Redsys service.
 Requirements
 ------------
 
-* Python 2.7
+* Python 3.13
 
 Installation
 ------------
@@ -62,6 +62,13 @@ Quick Start
 
     redsyspayment = Client(business_code=REDSYS_MERCHANT_CODE, secret_key=REDSYS_SECRET_KEY, sandbox=SANDBOX)
     redsys_form = redsyspayment.redsys_generate_request(values)
+
+Run tests
+
+.. code-block:: python
+    $ pip install pytest
+    $ export PYTHONPATH=$(pwd)
+    $ pytest -v redsys/tests/test_redsys.py
 
 Thanks
 ------
