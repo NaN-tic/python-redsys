@@ -53,12 +53,13 @@ ALPHANUMERIC_CHARACTERS = re.compile(b'[^a-zA-Z0-9]')
 class Client(object):
     """Client"""
 
-    def __init__(self, business_code, secret_key, sandbox=False):
+    def __init__(self, business_code, secret_key, sandbox=False, paymethod=None):
         # init params
         for param in DATA:
             setattr(self, param, None)
         self.Ds_Merchant_MerchantCode = business_code
         self.secret_key = secret_key
+        self.paymethod = paymethod
         if sandbox:
             self.redsys_url = 'https://sis-t.redsys.es:25443/sis/realizarPago'
         else:
@@ -132,6 +133,16 @@ class Client(object):
             'DS_MERCHANT_CONSUMERLANGUAGE': LANG_MAP.get(
                 params.get('DS_MERCHANT_CONSUMERLANGUAGE'), '001'),
             }
+
+        # This field is only needed when we use some special, payment, if we
+        # dont use any, we need to remove it.
+        # Othewise the payment will fail with error: SIS0231
+        if self.paymethod == 'bizum':
+            merchant_parameters['DS_MERCHANT_PAYMETHODS'] = 'z'
+        elif self.paymethod == 'google':
+            merchant_parameters['DS_MERCHANT_PAYMETHODS'] = 'google'
+        elif self.paymethod == 'apple':
+            merchant_parameters['DS_MERCHANT_PAYMETHODS'] = 'xpay'
 
         # Encode merchant_parameters in json + base64
         b64_params = base64.b64encode(json.dumps(merchant_parameters).encode())

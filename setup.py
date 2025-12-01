@@ -3,8 +3,7 @@
 """Setup file for redsys client.
 """
 
-import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 PACKAGES = ['redsys', ]
 PACKAGES_DATA = {'redsys.tests': []}
@@ -15,7 +14,7 @@ setup(name='redsys',
     author_email='zikzak@zikzakmedia.com',
     url='http://www.zikzakmedia.com',
     download_url="https://github.com/nanticzz/python-redsys",
-    version='0.3.0',
+    version='0.3.1',
     license='General Public Licence 2',
     provides=['redsys'],
     install_requires=[
