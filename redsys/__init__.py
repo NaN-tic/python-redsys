@@ -62,8 +62,10 @@ class Client(object):
         self.paymethod = paymethod
         if sandbox:
             self.redsys_url = 'https://sis-t.redsys.es:25443/sis/realizarPago'
+            self.redsys_api_url = 'https://sis-t.redsys.es:25443/sis/rest/trataPeticionREST'
         else:
             self.redsys_url = 'https://sis.redsys.es/sis/realizarPago'
+            self.redsys_api_url = 'https://sis.redsys.es/sis/rest/trataPeticionREST'
 
     @staticmethod
     def decode_parameters(merchant_parameters):
@@ -113,7 +115,7 @@ class Client(object):
         Method to generate Redsys Ds_MerchantParameters and Ds_Signature
 
         :param params: Dict with all transaction parameters
-        :return dict url, signature, parameters and type signature
+        :return dict: url, signature, parameters and type signature
         """
         merchant_parameters = {
             'DS_MERCHANT_AMOUNT': int(params['DS_MERCHANT_AMOUNT'] * 100),
@@ -144,19 +146,30 @@ class Client(object):
         elif self.paymethod == 'apple':
             merchant_parameters['DS_MERCHANT_PAYMETHODS'] = 'xpay'
 
-        # Encode merchant_parameters in json + base64
-        b64_params = base64.b64encode(json.dumps(merchant_parameters).encode())
-        # Encrypt order
-        encrypted_order = self.encrypt_order_with_3DES(
-            merchant_parameters['DS_MERCHANT_ORDER'])
-        # Sign parameters
-        signature = self.sign_hmac256(encrypted_order, b64_params).decode()
-        return {
-            'Ds_Redsys_Url': self.redsys_url,
-            'Ds_SignatureVersion': 'HMAC_SHA256_V1',
-            'Ds_MerchantParameters': b64_params.decode(),
-            'Ds_Signature': signature,
+        return self._handle_request(merchant_parameters, self.redsys_url)
+
+    def redsys_generate_reversal_request(self, params):
+        """
+        Method to generate a Redsys REST 'refund/cancel payment' request.
+
+        See Redsys documentation:
+        https://pagosonline.redsys.es/desarrolladores-inicio/documentacion-operativa/devolver-o-anular-un-pago/
+
+        :param params: Dict with all transaction parameters
+        :return dict: Ds_Redsys_Url, Ds_SignatureVersion,
+            Ds_MerchantParameters and Ds_Signature
+        """
+        merchant_parameters = {
+            'DS_MERCHANT_ORDER': params['DS_MERCHANT_ORDER'].zfill(10),
+            'DS_MERCHANT_MERCHANTCODE': params['DS_MERCHANT_MERCHANTCODE'][:9],
+            'DS_MERCHANT_TERMINAL': params['DS_MERCHANT_TERMINAL'] or '1',
+            'DS_MERCHANT_TRANSACTIONTYPE': (
+                params['DS_MERCHANT_TRANSACTIONTYPE'] or '0'),
+            'DS_MERCHANT_CURRENCY': params['DS_MERCHANT_CURRENCY'] or 978, # EUR
+            'DS_MERCHANT_AMOUNT': int(params['DS_MERCHANT_AMOUNT'] * 100),
             }
+
+        return self._handle_request(merchant_parameters, self.redsys_api_url)
 
     def redsys_check_response(self, signature, b64_merchant_parameters):
         """
@@ -180,3 +193,18 @@ class Client(object):
         safe_computed_signature = re.sub(ALPHANUMERIC_CHARACTERS, b'',
             computed_signature)
         return safe_signature == safe_computed_signature
+
+    def _handle_request(self, merchant_parameters, url):
+        # Encode merchant_parameters in json + base64
+        b64_params = base64.b64encode(json.dumps(merchant_parameters).encode())
+        # Encrypt order
+        encrypted_order = self.encrypt_order_with_3DES(
+            merchant_parameters['DS_MERCHANT_ORDER'])
+        # Sign parameters
+        signature = self.sign_hmac256(encrypted_order, b64_params).decode()
+        return {
+            'Ds_Redsys_Url': url,
+            'Ds_SignatureVersion': 'HMAC_SHA256_V1',
+            'Ds_MerchantParameters': b64_params.decode(),
+            'Ds_Signature': signature,
+            }
