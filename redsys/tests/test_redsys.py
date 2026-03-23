@@ -35,5 +35,41 @@ class TestRedsysClient(unittest.TestCase):
         signature = 'jYGvi/jEWufC4r11i9GDDnRJmw7mQHPbOA/IJ8fD3Fs='
         self.assertEqual(redsys_data['Ds_Signature'], signature)
 
+    def test_reversal_sample(self):
+        SANDBOX = True
+        REDSYS_MERCHANT_CODE = '000000000'
+        REDSYS_SECRET_KEY = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7'
+
+        values = {
+            'DS_MERCHANT_AMOUNT': 10.0,
+            'DS_MERCHANT_CURRENCY': 978,
+            'DS_MERCHANT_ORDER': 'SO001',
+            'DS_MERCHANT_MERCHANTCODE': REDSYS_MERCHANT_CODE,
+            'DS_MERCHANT_TERMINAL': '1',
+            'DS_MERCHANT_TRANSACTIONTYPE': '45',
+            }
+
+        redsyspayment = Client(
+            business_code=REDSYS_MERCHANT_CODE,
+            secret_key=REDSYS_SECRET_KEY,
+            sandbox=SANDBOX)
+        redsys_data = redsyspayment.redsys_generate_reversal_request(values)
+
+        self.assertEqual(
+            redsys_data['Ds_Redsys_Url'],
+            'https://sis-t.redsys.es:25443/sis/rest/trataPeticionREST')
+        self.assertEqual(
+            redsys_data['Ds_SignatureVersion'], 'HMAC_SHA256_V1')
+        self.assertEqual(
+            redsys_data['Ds_MerchantParameters'],
+            'eyJEU19NRVJDSEFOVF9PUkRFUiI6ICIwMDAwMFNPMDAxIiwgIkRTX01FUkNI'
+            'QU5UX01FUkNIQU5UQ09ERSI6ICIwMDAwMDAwMDAiLCAiRFNfTUVSQ0hBTlRf'
+            'VEVSTUlOQUwiOiAiMSIsICJEU19NRVJDSEFOVF9UUkFOU0FDVElPTlRZUEUi'
+            'OiAiNDUiLCAiRFNfTUVSQ0hBTlRfQ1VSUkVOQ1kiOiA5NzgsICJEU19NRVJD'
+            'SEFOVF9BTU9VTlQiOiAxMDAwfQ==')
+        self.assertEqual(
+            redsys_data['Ds_Signature'],
+            'K0yeF3UcW/5xr8FIsYNg41lfK7ZdM/7G5Z+zqRWxdsE=')
+
 if __name__ == '__main__':
     unittest.main()
