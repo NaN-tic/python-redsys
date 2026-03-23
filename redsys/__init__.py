@@ -164,7 +164,7 @@ class Client(object):
             'DS_MERCHANT_MERCHANTCODE': params['DS_MERCHANT_MERCHANTCODE'][:9],
             'DS_MERCHANT_TERMINAL': params['DS_MERCHANT_TERMINAL'] or '1',
             'DS_MERCHANT_TRANSACTIONTYPE': (
-                params['DS_MERCHANT_TRANSACTIONTYPE'] or '0'),
+                params['DS_MERCHANT_TRANSACTIONTYPE'] or '45'),
             'DS_MERCHANT_CURRENCY': params['DS_MERCHANT_CURRENCY'] or 978, # EUR
             'DS_MERCHANT_AMOUNT': int(params['DS_MERCHANT_AMOUNT'] * 100),
             }
