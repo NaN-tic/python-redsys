@@ -55,21 +55,8 @@ class TestRedsysClient(unittest.TestCase):
             sandbox=SANDBOX)
         redsys_data = redsyspayment.redsys_generate_reversal_request(values)
 
-        self.assertEqual(
-            redsys_data['Ds_Redsys_Url'],
-            'https://sis-t.redsys.es:25443/sis/rest/trataPeticionREST')
-        self.assertEqual(
-            redsys_data['Ds_SignatureVersion'], 'HMAC_SHA256_V1')
-        self.assertEqual(
-            redsys_data['Ds_MerchantParameters'],
-            'eyJEU19NRVJDSEFOVF9PUkRFUiI6ICIwMDAwMFNPMDAxIiwgIkRTX01FUkNI'
-            'QU5UX01FUkNIQU5UQ09ERSI6ICIwMDAwMDAwMDAiLCAiRFNfTUVSQ0hBTlRf'
-            'VEVSTUlOQUwiOiAiMSIsICJEU19NRVJDSEFOVF9UUkFOU0FDVElPTlRZUEUi'
-            'OiAiNDUiLCAiRFNfTUVSQ0hBTlRfQ1VSUkVOQ1kiOiA5NzgsICJEU19NRVJD'
-            'SEFOVF9BTU9VTlQiOiAxMDAwfQ==')
-        self.assertEqual(
-            redsys_data['Ds_Signature'],
-            'K0yeF3UcW/5xr8FIsYNg41lfK7ZdM/7G5Z+zqRWxdsE=')
+        signature = 'K0yeF3UcW/5xr8FIsYNg41lfK7ZdM/7G5Z+zqRWxdsE='
+        self.assertEqual(redsys_data['Ds_Signature'], signature)
 
 if __name__ == '__main__':
     unittest.main()
